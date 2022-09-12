@@ -1,0 +1,1 @@
+('First string\n', 'second string\n', 'thrird string\n')
