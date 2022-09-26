@@ -15,7 +15,27 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from django.urls import path, include
+from news.views import NewsList, NewsDetail, NewsCreate, NewsEdit, ArticleList, \
+    ArticleDetail, ArticleCreate, ArticleEdit, PostDelete
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('pages/', include('django.contrib.flatpages.urls')),
+    # Делаем так, чтобы все адреса из нашего приложения (news/urls.py)
+    # подключались к главному приложению с префиксом news/.
+    #    path('news/', include('news.urls')),
+    #    path('news/create/', NewsCreate.as_view(), name='news_create'),
+    #    path('articles/', include('article.urls')),
+    #    path('articles/create/', ArticleCreate.as_view(), name='article_create'),
+    path('news/', NewsList.as_view(), name='news_list'),
+    path('news/<int:pk>', NewsDetail.as_view(), name='news_detail'),
+    path('news/create/', NewsCreate.as_view(), name='news_create'),
+    path('news/<int:pk>/edit/', NewsEdit.as_view(), name='post_edit'),
+    path('news/<int:pk>/delete/', PostDelete.as_view(), name='post_delete'),
+    path('articles/', ArticleList.as_view(), name='articles_list'),
+    path('articles/<int:pk>', ArticleDetail.as_view(), name='articles_detail'),
+    path('articles/create/', ArticleCreate.as_view(), name='articles_create'),
+    path('articles/<int:pk>/edit/', ArticleEdit.as_view(), name='post_edit'),
+    path('articles/<int:pk>/delete/', PostDelete.as_view(), name='post_delete'),
 ]
