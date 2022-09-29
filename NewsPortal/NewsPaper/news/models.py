@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.urls import reverse
 
 
 class Author(models.Model):
@@ -16,25 +17,22 @@ class Author(models.Model):
             self.author_rating += _comment.comment_rating
         self.save()
 
+    def __str__(self):
+        return f'{self.author_user.username} *{self.author_rating}*'
+
 
 class Category(models.Model):
     title = models.CharField(max_length=31, unique=True)
 
+    def __str__(self):
+        return f'{self.title}'
+
 
 class Post(models.Model):
-    article = 'AR'
-    news = 'NW'
-
-    POSITIONS = [
-        (article, 'Статья'),
-        (news, 'Новость')
-    ]
-
     post_author = models.ForeignKey('Author', on_delete=models.CASCADE)
-    post_choice = models.CharField(max_length=2,
-                                   choices=POSITIONS,
-                                   default=news)
+
     post_category = models.ManyToManyField('Category', through='PostCategory')
+
     post_title = models.CharField(max_length=127)
     post_text = models.TextField()
     post_date = models.DateTimeField(auto_now_add=True)
@@ -51,10 +49,26 @@ class Post(models.Model):
         self.post_rating -= 1
         self.save()
 
+    def __str__(self):
+        return f'{self.post_date.strftime("%d.%m.%Y")} - {self.post_author.author_user.username}: {self.post_title}'
+
+
+class News(Post):
+    def get_absolute_url(self):
+        return reverse('news_detail', args=[str(self.id)])
+
+
+class Article(Post):
+    def get_absolute_url(self):
+        return reverse('articles_detail', args=[str(self.id)])
+
 
 class PostCategory(models.Model):
     post = models.ForeignKey('Post', on_delete=models.CASCADE)
     category = models.ForeignKey('Category', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.post.id}.{self.post.post_author.author_user.username}: {self.post.post_title} - {self.category}'
 
 
 class Comment(models.Model):
@@ -71,3 +85,6 @@ class Comment(models.Model):
     def dislike(self):
         self.comment_rating -= 1
         self.save()
+
+    def __str__(self):
+        return f'{self.comment_user.username}: {self.comment_text} *{self.comment_rating}*'
